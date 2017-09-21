@@ -25,6 +25,17 @@
 % create a new file handle
 \newwrite\pdfpcnotesfile
 
+\def\activateCtrlChars{%
+	\catcode`\^^I=\active%
+	\catcode`\^^M=\active%
+	\begingroup\lccode`~=`\^^I\lowercase{\endgroup\def~}{&}%
+	\begingroup\lccode`~=`\^^M\lowercase{\endgroup\def~}{\\}%
+}
+\begingroup%
+\obeylines%
+\gdef\gobbleLineBreak{\@ifnextchar^^M{\@gobble}{}}%
+\endgroup%
+
 % open file on \begin{document}
 \AtBeginDocument{%
 	\immediate\openout\pdfpcnotesfile\jobname.pdfpc\relax
@@ -49,8 +60,14 @@
 \newif\ifpdfpcnotes@noteexists
 
 % define command \pnote{} that works like note but
+% an auxiliary command that should then receive the newlines...
+\newcommand{\pnotenew}{%
+  \begingroup\activateCtrlChars\fetchPnoteArg
+}
+
+% The auxiliary command that should receive the newlines
 % additionally writes notes to file in pdfpc readable format
-\newcommand<>{\pnote}[2][]{%
+\newcommand<>{\fetchPnoteArg}[2][]{%
 	% keep normal notes working
 	\note#3[#1]{#2}%
 %
@@ -89,6 +106,8 @@
 			\immediate\write\pdfpcnotesfile{#2}%
 		\endgroup%
 	\fi%
+
+	\endgroup%
 
 }
 % close file on \begin{document}
