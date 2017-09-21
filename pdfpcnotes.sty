@@ -7,6 +7,7 @@
 % Copyright 2013       Carsten Brandt <mail@cebe.cc>
 % Copyright 2013       Aggelos Karalias <aggelos.karalias@gmail.com>
 % Copyright 2014-2016  Raphaël Beamonte <raphael.beamonte@gmail.com>
+% Copyright 2015       Bence Ferdinandy <bence@ferdinandy.com>
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -49,12 +50,11 @@
 
 % define command \pnote{} that works like note but
 % additionally writes notes to file in pdfpc readable format
-\newcommand{\pnote}[1]{%
+\newcommand<>{\pnote}[2][]{%
 	% keep normal notes working
-	\note{#1}%
+	\note#3[#1]{#2}%
 %
-	% if frame changed - write a new header
-	\ifdim\theframenumber pt>\pdfpcnotes@lastframenumber pt
+	\ifdim\theframenumber pt>\pdfpcnotes@lastframenumber pt%
 		\global\edef\pdfpcnotes@lastframenumber{\theframenumber}%
 		\setcounter{pdfpcnotes@currentframenotes}{0}%
 		\begingroup%
@@ -68,7 +68,7 @@
 	\forloop{pdfpcnotes@checkifnoteexists}{0}{%
 		\value{pdfpcnotes@checkifnoteexists} < \value{pdfpcnotes@currentframenotes}%
 	}{%
-		\ifnum\pdf@strcmp{\unexpanded{#1}}{\csname pdfpcnotes@currentframenotes@\thepdfpcnotes@checkifnoteexists\endcsname}=0
+		\ifnum\pdf@strcmp{\unexpanded{#2}}{\csname pdfpcnotes@currentframenotes@\thepdfpcnotes@checkifnoteexists\endcsname}=0%
 			\pdfpcnotes@noteexiststrue%
 			\setcounter{pdfpcnotes@checkifnoteexists}{\value{pdfpcnotes@currentframenotes}}%
 		\else%
@@ -79,16 +79,17 @@
 	\ifpdfpcnotes@noteexists%
 	\else%
 		% add note in stored notes
-		\expandafter\global\expandafter\def\csname pdfpcnotes@currentframenotes@\thepdfpcnotes@currentframenotes\endcsname{\unexpanded{#1}}%
+		\expandafter\global\expandafter\def\csname pdfpcnotes@currentframenotes@\thepdfpcnotes@currentframenotes\endcsname{\unexpanded{#2}}%
 		\stepcounter{pdfpcnotes@currentframenotes}%
 %
 		% write note to file
 		\begingroup%
 			\def\\{^^J}%
 			\def\par{^^J^^J}%
-			\immediate\write\pdfpcnotesfile{#1}%
+			\immediate\write\pdfpcnotesfile{#2}%
 		\endgroup%
 	\fi%
+
 }
 % close file on \begin{document}
 \AtEndDocument{%
